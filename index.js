@@ -20,10 +20,17 @@ async function main() {
   const html = await page.content();
   const $ = cheerio.load(html);
 
-  const results = $(".result-title").map((index, element) => {
-    const title = $(element).text();
-    const url = $(element).attr("href");
-    return { title, url };
+  const results = $(".result-info").map((index, element) => {
+    const titleElement = $(element).find(".result-title");
+    const timeElement = $(element).find(".result-date")
+    const hoodElement = $(element).find(".result-hood");
+    
+    const title = $(titleElement).text();
+    const url = $(titleElement).attr("href");
+    const datePosted = new Date($(timeElement).attr("datetime"));
+    const neighborhood = $(hoodElement).text().trim().replace("(","").replace(")","");
+    
+    return { title, url, datePosted, neighborhood };
   }).get();
   console.log(results);
 }
