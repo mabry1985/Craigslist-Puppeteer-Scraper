@@ -3,17 +3,7 @@ const cheerio = require("cheerio");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const Listing = require("./model/Listing");
-
-const scrapingResults = [
-  {
-    title: "",
-    datePosted: new Date("2019-07-25 12:34:00"),
-    neighborhood: "(palo alto)",
-    url: "https://portland.craigslist.org/mlt/sof/d/vancouver-entry-level-python-yaml/7028441064.html",
-    jobDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ea, voluptatum.",
-    compensation: "Up to $5.00 per hour"
-  }
-]
+const ObjectsToCsv = require('objects-to-csv');
 
 async function connectToMongoDb() {
   password = process.env.MONGO_PASSWORD
@@ -22,6 +12,14 @@ async function connectToMongoDb() {
     { useNewUrlParser: true }
   );
   console.log("connected to db")
+}
+
+async function createCsvFile(data) {
+  const csv = new ObjectsToCsv(data);
+
+  // Save to file:
+  await csv.toDisk("./test.csv");
+
 }
 
 async function scrapeListings(page) {
@@ -46,7 +44,7 @@ async function scrapeListings(page) {
 }
 
 async function scrapeJobDescriptions(listings, page) {
-  for(var i = 0; i < listings.length; i ++) {
+  for(var i = 0; i < listings.length / 10; i ++) {
     await page.goto(listings[i].url);
     const html = await page.content();
     const $ = cheerio.load(html);
@@ -74,6 +72,7 @@ async function main() {
     listings,
     page
   );
+  await createCsvFile(listings);
   console.log(listings);
 }
 
